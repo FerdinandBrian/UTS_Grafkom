@@ -1,3 +1,5 @@
+const gravitasi = 300
+
 export default class GrafLib{
 
     constructor(canvas_width, image_data){
@@ -299,20 +301,82 @@ export class Bird{
         const x = this.x
         const y = this.y
         const r = this.radius
-        const merah = {r: 120, g: 0, b: 0}
+        const merah = {r: 220, g: 30, b: 40}
         const putih = {r: 255, g: 255, b: 255}
-        
+        const oranye = {r: 255, g: 170, b: 0}
+        const hitam = {r: 1, b: 2, g: 3}
 
-        graf.lingkaran_polar(this.x, this.y, this.radius, this.color);
-        graf.lingkaran_polar(this.x + 6, this.y - 5, 3, {r:0,g:0,b:0});
-        graf.polygon(
-            [{x:this.x+14,y:this.y-2},{x:this.x+26,y:this.y+3},
-            {x:this.x+14,y:this.y+7}], {r:230,g:140,b:0}
-        );
+        const W = graf.image_data.width
+        const H = graf.image_data.height
+        const aman = (x - r >= 1) && (x + 28 <= W - 2) && (y - r >= 1) && (y + r <= H - 2);
+
+        // Badan burung
+        graf.lingkaran_polar(this.x, this.y, this.radius, merah);
+        // if (aman)graf.FloodFillNonRecursive(Math.round(x), Math.round(y), merah, merah)
+
+        // Pupil
+        graf.lingkaran_polar(this.x + 6, this.y - 5, 5, hitam);
+        graf.lingkaran_polar(this.x + 6, this.y -5, 2, hitam)
+
+        // Paruh
+        graf.polygon([{x:this.x+14,y:this.y-2}, {x:this.x+26,y:this.y+3}, {x:this.x+14,y:this.y+7}], oranye);
+    }
+}
+
+export class YellowBird extends Bird{
+    draw(graf) {
+        if (this.state === 'done') return;
+        this.gambarBurung(graf, Math.round(this.x), Math.round(this.y))
     }
 
+    gambarBurung(graf, x, y){
+        const kuning = {r: 255, g: 215, b: 0}
+        const putih = {r: 255, g: 255, b: 255}
+        const oranye = {r: 255, g: 140, b: 0}
+        const hitam = {r: 1, g: 2, b:3}
 
+        
+        graf.polygon([{x: x, y: y - 20}, {x: x + 22, y: y + 18}, {x: x - 16, y: y + 18}], kuning);
+        
+        // Mata + alis
+        graf.lingkaran_polar(x + 9, y - 1, 4, hitam);
+        // graf.FloodFillNonRecursive(x + 11, y - 4, hitam, putih);
+        graf.lingkaran_polar(x + 9, y - 1, 1, hitam);
 
+        // Paruh runcing
+        graf.polygon([{x:x+11,y:y+3},{x:x+27,y:y+5},{x:x+11,y:y+7}], oranye);
+        // graf.FloodFillNonRecursive(x + 22, y + 1, oranyeGelap, oranye);
+    }
+    
+}
+
+export class BlackBird extends Bird{
+    draw(graf) {
+        if (this.state === 'done') return;
+        this.gambarBurung(graf, Math.round(this.x), Math.round(this.y))
+    }
+
+    gambarBurung(graf, x, y){
+        const putih = {r: 255, g: 255, b: 255}
+        const oranye = {r: 255, g: 170, b: 0}
+        const hitam = {r: 1, b: 2, g: 3}
+
+        const W = graf.image_data.width
+        const H = graf.image_data.height
+        // const aman = (x - r >= 1) && (x + 28 <= W - 2) && (y - r >= 1) && (y + r <= H - 2);
+
+        // Badan burung
+        graf.lingkaran_polar(this.x, this.y, this.radius, hitam);
+        //graf.FloodFillNonRecursive(Math.round(x), Math.round(y), merah, merah)
+
+        // Pupil
+        graf.lingkaran_polar(this.x + 6, this.y - 5, 5, hitam);
+        graf.lingkaran_polar(this.x + 6, this.y -5, 2, hitam)
+
+        // Paruh
+        graf.polygon([{x:this.x+14,y:this.y-2}, {x:this.x+26,y:this.y+3}, {x:this.x+14,y:this.y+7}], oranye);
+    }
+    
 }
 
 
@@ -369,7 +433,7 @@ export class Pig {
         const x = this.x;
         const y = this.y;
         const r = this.radius;
-
+        
         const hijau = { r: 90, g: 180, b: 50 };
         const hijauGelap = { r: 40, g: 100, b: 30 };
         const hitam = { r: 0, g: 0, b: 0 };
@@ -492,11 +556,11 @@ export class WoodBlock {
 
         const coklat = { r: 150, g: 90, b: 40 };
         const coklatGelap = { r: 85, g: 45, b: 20 };
+        const coklatMuda = {r: 205, g: 145, b: 80}
 
         const w = this.width / 2;
         const h = this.height / 2;
 
-       
         const titikKayu = [
             { x: -w, y: -h },
             { x:  w, y: -h },
@@ -511,6 +575,8 @@ export class WoodBlock {
         const hasil = graf.transform_points(titikKayu,transformasi);
 
         graf.polygon(hasil, coklat);
+
+        graf.FloodFillNonRecursive(Math.round(this.x), Math.round(this.y), coklat, coklatMuda); 
 
         if (this.condition === 'cracked') {
             const retakan = [
@@ -677,9 +743,10 @@ export class Game {
         this.shotTime = 0;
         this.ketapel.dragging = false;
 
+        let kuning = {r: 255, g: 215, b: 0}
         let merah = {r:255, g:0, b:0};
         for (let i = 0; i < 10; i++) {
-            this.birds.push(new Bird(this.ketapel.x, this.ketapel.y, merah, 100));
+            this.birds.push(new Bird(this.ketapel.x, this.ketapel.y, kuning, 100));
         }
 
         let tanah = this.groundY;
@@ -1022,9 +1089,45 @@ export class Game {
         requestAnimationFrame(loop);
     }
 
+    gambarJalur() {
+        if (!this.bird || !this.ketapel.dragging) return;
+
+        const ketapel = this.ketapel;
+        const W = this.canvas.width;
+        const abu = {r: 60, g: 60, b: 60};
+        const dt = 1 / 120;       
+        let x = this.bird.x;
+        let y = this.bird.y;
+        let vx = (ketapel.x - this.bird.x) * ketapel.power;
+        let vy = (ketapel.y - this.bird.y) * ketapel.power;
+
+        for (let langkah = 1; langkah <= 120; langkah++) {
+            vy += gravitasi * dt;
+            x += vx * dt;
+            y += vy * dt;
+
+            if (x < 3 || x > W - 4 || y > this.groundY) break;
+            
+            if (y < 3) continue;
+
+            
+            if (langkah % 6 === 0) {
+                const px = Math.round(x)
+                const py = Math.round(y)
+                const r = langkah < 40 ? 2 : 1;   
+
+                this.graf.lingkaran_polar(px, py, r, abu);
+                if (r === 2) this.graf.lingkaran_polar(px, py, 1, abu);
+                this.graf.draw_dot(px, py, abu);
+            }
+        }
+    }
+
     draw() {
-        let hitam = {r:10, g:10, b:10};
-        let hijau = {r:0, g:255, b:0};
+        const hitam = {r:10, g:10, b:10};
+        const hijau = {r:50, g:200, b:70};
+        const W = this.canvas.width
+        const H = this.canvas.height
         let tepi = [
             {x:0, y:0},
             {x:this.canvas.width - 1, y:0},
@@ -1032,12 +1135,24 @@ export class Game {
             {x:0, y:this.canvas.height - 1}
         ];
 
+        let tanah = [
+            {x: 0, y: this.groundY},
+            {x: W - 1, y: this.groundY},
+            {x: W - 1, y: H - 1},
+            {x: 0, y: H -1},
+        ]
+        
+        // Tanah
         this.graf.clearScreen(this.context, this.canvas);
-        this.graf.polygon(tepi, hitam);
+        this.graf.polygon(tanah, hijau);
         this.graf.dda_line(0, this.groundY, this.canvas.width - 1, this.groundY, hijau);
+        this.graf.FloodFillNonRecursive(508, 468, hijau, hijau)
+        this.graf.polygon(tepi, hitam)
+
 
         for (let block of this.blocks) block.draw(this.graf);
         this.ketapel.draw(this.graf, this.bird);
+        this.gambarJalur()
         if (this.bird) this.bird.draw(this.graf);
         for (let pig of this.pigs) pig.draw(this.graf);
 

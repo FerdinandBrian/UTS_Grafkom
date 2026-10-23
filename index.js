@@ -4,7 +4,7 @@ const canvas_handler = document.querySelector('#mycanvas');
 
 const game = new Game(canvas_handler);
 
-game.loadLevel(1);
+game.loadLevel(3);
 game.setEvent()
 
 game.start()
