@@ -18,36 +18,6 @@ export default class GrafLib{
         let dx = x2 - x1;
         let dy = y2 - y1;
 
-        // if (Math.abs(dx) > Math.abs(dy)) {
-        //     if (x1 > x2) {
-        //         var y = y1;
-        //         for (var x = x1; x > x2; x--) {
-        //             y += dy / Math.abs(dx);
-        //             this.draw_dot(Math.round(x), Math.round(y), color);
-        //         }
-
-        //     } else {
-        //         var y = y1;
-        //         for (var x = x1; x < x2; x++) {
-        //             y += dy / Math.abs(dx);
-        //             this.draw_dot(Math.round(x), Math.round(y), color);
-        //         }
-        //     }
-        // } else {
-        //     if (y1 > y2) {
-        //         var x = x1;
-        //         for (var y = y1; y > y2; y--) {
-        //             x += dx / Math.abs(dy);
-        //             this.draw_dot(Math.round(x), Math.round(y), color);
-        //         }
-        //     } else {
-        //         var x = x1;
-        //         for (var y = y1; y < y2; y++) {
-        //             x += dx / Math.abs(dy);
-        //             this.draw_dot(Math.round(x), Math.round(y), color);
-        //         }
-        //     }
-        // }
 
         if (Math.abs(dx) > Math.abs(dy)) {
             if (x1 > x2) {
@@ -146,10 +116,16 @@ export default class GrafLib{
     }
     
     FloodFillNonRecursive(x,y,warna_stop,warna_cat){
+        const W = this.image_data.width
+        const H = this.image_data.height
         const stack = []
-        stack.push({x:x,y:y})
+        stack.push({x:Math.round(x),y:Math.round(y)})
         while (stack.length>0){
             const current = stack.pop()
+            // Lewati titik di luar canvas agar tidak loop tanpa akhir
+            if (current.x < 0 || current.x >= W || current.y < 0 || current.y >= H){
+                continue;
+            }
             const currentColor = this.get_dot(current.x,current.y)
             if(this.check_warna(currentColor,warna_stop)==0 || (this.check_warna(currentColor,warna_cat)==0) ){
                 continue;
@@ -285,7 +261,7 @@ export class Bird{
         this.radius = 18
         this.vx = 0
         this.vy = 0
-        // ready, flying, dragging, stopped, done
+
         this.state = 'ready'
         this.skillUsed = false
     }
@@ -308,7 +284,7 @@ export class Bird{
         if (this.state !== 'flying') {
             return;
         }
-        this.vy += 300 * dt;
+        this.vy += 350 * dt;
         this.x += this.vx * dt;
         this.y += this.vy * dt;
     }
@@ -325,16 +301,38 @@ export class Bird{
     }
     draw(graf) {
         if (this.state === 'done') return;
-        graf.lingkaran_polar(this.x, this.y, this.radius, this.color);
-        graf.lingkaran_polar(this.x + 6, this.y - 5, 3, {r:0,g:0,b:0});
-        graf.polygon(
-            [{x:this.x+14,y:this.y-2},{x:this.x+26,y:this.y+3},
-            {x:this.x+14,y:this.y+7}], {r:230,g:140,b:0}
-        );
+
+        const x = this.x
+        const y = this.y
+        const r = this.radius
+        const merah = {r: 220, g: 30, b: 40}
+        const putih = {r: 255, g: 255, b: 255}
+        const oranye = {r: 255, g: 170, b: 0}
+        const hitam = {r: 1, b: 2, g: 3}
+
+        const W = graf.image_data.width
+        const H = graf.image_data.height
+
+        // Badan burung
+        graf.lingkaran_polar(this.x, this.y, this.radius, merah);
+        graf.FloodFillNonRecursive(Math.round(x), Math.round(y), merah, merah)
+
+        // Pupil
+        graf.lingkaran_polar(this.x + 6, this.y - 5, 5, hitam);
+        graf.FloodFillNonRecursive(Math.round(this.x + 6), Math.round(this.y - 5), hitam, putih)
+        graf.lingkaran_polar(this.x + 6, this.y -5, 2, hitam)
+        graf.FloodFillNonRecursive(Math.round(this.x + 6), Math.round(this.y -5), hitam, hitam)
+        
+
+
+        // Paruh
+        graf.polygon([{x:this.x+14,y:this.y-2}, {x:this.x+26,y:this.y+3}, {x:this.x+14,y:this.y+7}], oranye);
+        graf.FloodFillNonRecursive(Math.round(this.x + 18), Math.round(this.y + 3), oranye, oranye)        
+        console.log(this.x+20, this.y +5)
+
+        
+
     }
-
-
-
 }
 
 
@@ -351,6 +349,7 @@ export class Pig {
         this.radius = 20;
         this.vx = 0;
         this.vy = 0;
+        this.theta = 0
 
     }
 
@@ -358,9 +357,10 @@ export class Pig {
         if (this.condition === 'dead') {
             return;
         }
-        this.vy += 300 * dt;
+        this.vy += 350 * dt;
         this.x += this.vx * dt;
         this.y += this.vy * dt;
+        this.theta += (this.vx / this.radius) * dt * 180 / Math.PI;
     }
 
     takeDamage(damage) {
@@ -388,67 +388,78 @@ export class Pig {
     draw(graf) {
         if (this.condition === 'dead') return;
 
-        const x = this.x;
-        const y = this.y;
         const r = this.radius;
+        const hijau      = { r: 90,  g: 180, b: 50 };
+        const hijauGelap = { r: 40,  g: 100, b: 30 };
+        const hitam      = { r: 0,   g: 0,   b: 0 };
+        const ungu       = { r: 140, g: 60,  b: 180 };
+        const putih      = { r: 255, g: 255, b: 255 };
 
-        const hijau = { r: 90, g: 180, b: 50 };
-        const hijauGelap = { r: 40, g: 100, b: 30 };
-        const hitam = { r: 0, g: 0, b: 0 };
-        const ungu = { r: 140, g: 60, b: 180 };
+        const rotasi    = graf.create_rotation(this.theta);
+        const translasi = graf.create_translate(this.x, this.y);
+        const M = graf.multiply(translasi, rotasi);
+
+
+        const pusat     = graf.transform_point({x: 0,         y: 0},M);
+        const telingaKi = graf.transform_point({x: -r * 0.6,  y: -r * 0.8},M);
+        const telingaKa = graf.transform_point({x:  r * 0.6,  y: -r * 0.8},M);
+        const mataKi    = graf.transform_point({x: -r * 0.35, y: -r * 0.25},M);
+        const mataKa    = graf.transform_point({x:  r * 0.35, y: -r * 0.25},M);
+        const moncong   = graf.transform_point({x: 0,         y:  r * 0.25},M);
+        const hidungKi  = graf.transform_point({x: -r * 0.15, y:  r * 0.25},M);
+        const hidungKa  = graf.transform_point({x:  r * 0.15, y:  r * 0.25},M);
+
 
         // Telinga
-        graf.lingkaran_polar(x - r * 0.6, y - r * 0.8, r * 0.3, hijau);
-        graf.lingkaran_polar(x + r * 0.6, y - r * 0.8, r * 0.3, hijau);
+        graf.lingkaran_polar(telingaKi.x, telingaKi.y, r * 0.3, hijau);
+        graf.FloodFillNonRecursive(telingaKi.x, telingaKi.y, hijau, hijau);
+        graf.lingkaran_polar(telingaKa.x, telingaKa.y, r * 0.3, hijau);
+        graf.FloodFillNonRecursive(telingaKa.x, telingaKa.y, hijau, hijau);
 
         // Kepala
-        graf.lingkaran_polar(x, y, r, hijau);
+        graf.lingkaran_polar(pusat.x, pusat.y, r, hijau);
+        graf.FloodFillNonRecursive(pusat.x, pusat.y, hijau, hijau);
 
-        // Lingkaran mata
-        var warnaMata;
-        if (this.condition === 'unhealthy'){
-            warnaMata = ungu
-        }else{
-            warnaMata = hijauGelap;
+        // Mata
+        let warnaMata = hijauGelap;
+        if (this.condition === 'unhealthy') warnaMata = ungu;
+
+        for (const m of [mataKi, mataKa]) {
+            graf.lingkaran_polar(m.x, m.y, r * 0.22, warnaMata);
+            graf.FloodFillNonRecursive(m.x, m.y, warnaMata, putih);
+            if (this.condition === 'unhealthy') {
+                graf.FloodFillNonRecursive(m.x, m.y, warnaMata, warnaMata);
+            }
+
+            // Pupil
+            graf.lingkaran_polar(m.x, m.y, r * 0.08, hitam);
+            graf.FloodFillNonRecursive(m.x, m.y, warnaMata, hitam);
+            if (this.condition === 'unhealthy') {
+                graf.FloodFillNonRecursive(m.x, m.y, hitam, putih);
+                graf.draw_dot(m.x, m.y, hitam);
+            }
         }
 
-        graf.lingkaran_polar(x - r * 0.35, y - r * 0.25, r * 0.22, warnaMata);
-        graf.lingkaran_polar(x + r * 0.35, y - r * 0.25, r * 0.22, warnaMata);
-
-        // Pupil
-        graf.lingkaran_polar(x - r * 0.35, y - r * 0.25, r * 0.08, hitam);
-        graf.lingkaran_polar(x + r * 0.35, y - r * 0.25, r * 0.08, hitam);
-
-        // Moncong
-        graf.ellipse_polar(x, y + r * 0.25, r * 0.4, r * 0.28, hijauGelap);
+        // Moncong (lingkaran, karena elips tidak bisa ikut miring)
+        graf.lingkaran_polar(moncong.x, moncong.y, r * 0.35, hijauGelap);
 
         // Lubang hidung
-        graf.lingkaran_polar(x - r * 0.15, y + r * 0.25, r * 0.07, hitam);
-        graf.lingkaran_polar(x + r * 0.15, y + r * 0.25, r * 0.07, hitam);
+        graf.lingkaran_polar(hidungKi.x, hidungKi.y, r * 0.07, hitam);
+        graf.lingkaran_polar(hidungKa.x, hidungKa.y, r * 0.07, hitam);
 
-        // Luka X di pipi
+        // Luka X di pipi: ujung-ujung garis juga ikut diputar
         if (this.condition === 'unhealthy') {
-            const pipiX = x - r * 0.65;
-            const pipiY = y + r * 0.3;
-            const ukuran = r * 0.13;
-
-            graf.dda_line(
-                pipiX - ukuran, pipiY - ukuran,
-                pipiX + ukuran, pipiY + ukuran,
-                ungu
-            );
-
-            graf.dda_line(
-                pipiX - ukuran, pipiY + ukuran,
-                pipiX + ukuran, pipiY - ukuran,
-                ungu
-            );
+            const px = -r * 0.65, py = r * 0.3, u = r * 0.13;
+            const a = titik(px - u, py - u), b = titik(px + u, py + u);
+            const c = titik(px - u, py + u), d = titik(px + u, py - u);
+            graf.dda_line(a.x, a.y, b.x, b.y, ungu);
+            graf.dda_line(c.x, c.y, d.x, d.y, ungu);
         }
     }
 }
 
 export class WoodBlock {
-    constructor(x, y, width, height, maxHp = 100,damage = 25) {
+    constructor(x, y, width, height, maxHp = 150,damage = 50) {
         this.startX = x;
         this.startY = y;
         this.x = x;
@@ -461,6 +472,8 @@ export class WoodBlock {
         this.hp = maxHp;
         this.condition = 'healthy';
         this.damage = damage
+        this.minDamageSpeed = 30;
+        this.hitPigs = [];
 
         this.vx = 0;
         this.vy = 0;
@@ -469,12 +482,18 @@ export class WoodBlock {
         this.theta = 0;
     }
 
+
     update(dt) {
         if (this.condition === 'destroyed') return;
 
-        this.vy += 300 * dt;
+        this.vy += 400 * dt;
         this.x += this.vx * dt;
         this.y += this.vy * dt;
+        this.vx *= 0.96;
+
+        if (Math.abs(this.vx) < 2) {
+            this.vx = 0;
+        }
     }
 
     takeDamage(damage) {
@@ -507,11 +526,11 @@ export class WoodBlock {
 
         const coklat = { r: 150, g: 90, b: 40 };
         const coklatGelap = { r: 85, g: 45, b: 20 };
+        const coklatMuda = {r: 205, g: 145, b: 80}
 
         const w = this.width / 2;
         const h = this.height / 2;
 
-       
         const titikKayu = [
             { x: -w, y: -h },
             { x:  w, y: -h },
@@ -526,6 +545,8 @@ export class WoodBlock {
         const hasil = graf.transform_points(titikKayu,transformasi);
 
         graf.polygon(hasil, coklat);
+
+        graf.FloodFillNonRecursive(Math.round(this.x), Math.round(this.y), coklat, coklatMuda); 
 
         if (this.condition === 'cracked') {
             const retakan = [
@@ -635,7 +656,7 @@ export class SlingShot {
         let ujungY = this.y;
 
 
-        if (bird.state === 'ready' || bird.state === 'dragging'){
+        if (bird && (bird.state === 'ready' || bird.state === 'dragging')){
             ujungX = bird.x;
             ujungY = bird.y;
         }
@@ -674,9 +695,8 @@ export class Game {
         this.level = 1;
         this.maxLevel = 3;
         this.running = false;
-        this.eventsReady = false;
-        this.hitObjects = []; // Objek yang sudah terkena burung saat ini
-        this.shotTime = 0;   // Lama burung berada dalam tembakan
+        this.hitObjects = []; 
+        this.shotTime = 0;   
     }
 
     loadLevel(level) {
@@ -692,27 +712,28 @@ export class Game {
         this.shotTime = 0;
         this.ketapel.dragging = false;
 
+        let kuning = {r: 255, g: 215, b: 0}
         let merah = {r:255, g:0, b:0};
-        for (let i = 0; i < level + 2; i++) {
-            this.birds.push(new Bird(this.ketapel.x, this.ketapel.y, merah, 50));
+        for (let i = 0; i < 10; i++) {
+            this.birds.push(new Bird(this.ketapel.x, this.ketapel.y, kuning, 100));
         }
 
         let tanah = this.groundY;
         if (level === 1) {
             let tengah = this.canvas.width - 220;
             this.blocks.push(
-                new WoodBlock(tengah - 50, tanah - 50, 30, 100),
+                new WoodBlock(tengah - 50, tanah - 50, 30,100),
                 new WoodBlock(tengah + 50, tanah - 50, 30, 100),
                 new WoodBlock(tengah, tanah - 115, 150, 30)
             );
             this.pigs.push(new Pig(tengah + 100, tanah - 20, 100));
         } else if (level === 2) {
-            let kiri = this.canvas.width - 300;
+            let kiri = this.canvas.width - 350;
             this.blocks.push(
                 new WoodBlock(kiri - 50, tanah - 50, 30, 100),
                 new WoodBlock(kiri + 50, tanah - 50, 30, 100),
                 new WoodBlock(kiri, tanah - 115, 130, 30),
-                new WoodBlock(kiri + 200, tanah - 50, 30, 100),
+                new WoodBlock(kiri + 200, tanah - 50, 30, 100,),
                 new WoodBlock(kiri + 260, tanah - 50, 30, 100),
                 new WoodBlock(kiri + 230, tanah - 115, 80, 30)
             );
@@ -724,13 +745,13 @@ export class Game {
             let kiri = this.canvas.width - 360;
             let kanan = this.canvas.width - 100;
             this.blocks.push(
-                new WoodBlock(kiri - 50, tanah - 50, 30, 100),
-                new WoodBlock(kiri + 50, tanah - 50, 30, 100),
+                new WoodBlock(kiri - 50, tanah - 50, 30, 100,150),
+                new WoodBlock(kiri + 50, tanah - 50, 30, 100,150),
                 new WoodBlock(kiri, tanah - 115, 130, 30),
-                new WoodBlock(kanan - 50, tanah - 50, 30, 100),
+                new WoodBlock(kanan - 50, tanah - 50, 30, 100,150),
                 new WoodBlock(kanan + 50, tanah - 50, 30, 100),
-                new WoodBlock(kanan, tanah - 115, 130, 30),
-                new WoodBlock((kiri + kanan) / 2, tanah - 140, 180, 20)
+                new WoodBlock(kanan, tanah - 115, 130, 30,150),
+                new WoodBlock((kiri + kanan) / 2, tanah - 140, 180, 20,150)
             );
             this.pigs.push(
                 new Pig(kiri, tanah - 20, 100),
@@ -803,23 +824,47 @@ export class Game {
     checkCollisions(dt) {
         // 1. Semua objek tidak boleh jatuh melewati tanah.
         let objek = [];
-        if (this.bird && this.bird.state === 'flying') objek.push(this.bird);
+        if (this.bird && this.bird.state === 'flying') {
+            objek.push(this.bird);
+        }
+
         for (let pig of this.pigs) {
             if (pig.condition !== 'dead') objek.push(pig);
         }
+
         for (let block of this.blocks) {
             if (block.condition !== 'destroyed') objek.push(block);
         }
 
         for (let obj of objek) {
-            let lebar = obj.radius || obj.width / 2;
-            let tinggi = obj.radius || obj.height / 2;
+            let lebar;
+            let tinggi;
+            
+            if (obj instanceof(WoodBlock)){
+                lebar = obj.width / 2;
+                tinggi =obj.height / 2;
+            }
+            else{
+                lebar = obj.radius
+                tinggi = obj.radius
+            }
 
             if (obj.x < lebar) {
-                obj.x = lebar;
-                if (obj.vx < 0) obj.vx *= -0.3;
+                if (obj === this.bird) {   
+                    this.nextBird();
+                    continue;
+                }
             }
-            if (obj.x > this.canvas.width - lebar) {
+            if (obj.y - tinggi < 0) {
+                obj.y = tinggi;                    
+                if (obj.vy < 0) obj.vy *= -0.3;    
+            }
+            if (obj.x + lebar >= this.canvas.width) {
+                if (obj === this.bird) {
+                    this.nextBird();
+                    continue;
+                }
+
                 obj.x = this.canvas.width - lebar;
                 if (obj.vx > 0) obj.vx *= -0.3;
             }
@@ -838,6 +883,32 @@ export class Game {
         for (let i = 0; i < this.blocks.length; i++) {
             let a = this.blocks[i];
             if (a.condition === 'destroyed') continue;
+
+
+            // Cek kayu jatuh menimpa babi
+            for (let pig of this.pigs) {
+                if (pig.condition === 'dead') continue;
+
+                for (let block of this.blocks) {
+                    if (block.condition === 'destroyed') continue;
+
+                    let dx = pig.x - block.x;
+                    let dy = pig.y - block.y;
+
+                    let tumpangX = block.width / 2 + pig.radius - Math.abs(dx);
+                    let tumpangY = block.height / 2 + pig.radius - Math.abs(dy);
+
+                    if (tumpangX > 0 && tumpangY > 0) {
+                        if (block.y < pig.y && block.vy > block.minDamageSpeed) {
+                            if (!block.hitPigs.includes(pig)) {
+                                pig.takeDamage(block.damage);
+                                block.hitPigs.push(pig);
+                                console.log("Babi terkena kayu! HP:", pig.hp);
+                            }
+                        }
+                    }
+                }
+            }
 
             for (let j = i + 1; j < this.blocks.length; j++) {
                 let b = this.blocks[j];
@@ -878,15 +949,29 @@ export class Game {
                 if (tumpangX <= 0 || tumpangY <= 0) continue;
 
                 if (tumpangY < tumpangX) {
-                    if (dy < 0) pig.y -= tumpangY;
-                    else pig.y += tumpangY;
-                    pig.vy = 0;
+                    if (dy < 0) {
+                        // Babi berada di atas kayu
+                        pig.y -= tumpangY;
+                        if (pig.vy > 0) pig.vy = 0;
+                        pig.vx *= 0.998     
+                    } else {
+                        // Kayu berada di atas babi
+                        block.y -= tumpangY;
+                        if (block.vy > 0) block.vy = 0;
+                    }
                 } else {
+                    // Tabrakan dari samping
                     if (dx < 0) pig.x -= tumpangX;
                     else pig.x += tumpangX;
-                    pig.vx = 0;
+                }
+
+                // Kayu yang bergerak mendorong babi
+                if (Math.abs(block.vx) > 20) {
+                    pig.vx = block.vx * 0.8;
                 }
             }
+
+            
         }
 
         // Tidak ada tabrakan tembakan ketika burung masih di ketapel.
@@ -925,7 +1010,7 @@ export class Game {
 
             if (this.hitObjects.indexOf(block) === -1) {
                 block.takeDamage(bird.damage);
-                block.push(bird.vx * 0.25, bird.vy * 0.1);
+                block.push(bird.vx * 0.9, bird.vy * 0.15);
                 this.hitObjects.push(block);
             }
             if (tumpangX < tumpangY) {
@@ -978,23 +1063,61 @@ export class Game {
     start() {
         if (this.running) return;
         this.running = true;
+
+        const game = this;  
         let waktuLalu = 0;
 
-        const loop = (waktu) => {
-            let dt = (waktu - waktuLalu) / 1000;
-            waktuLalu = waktu;
+        function loop(ev) {
+            let dt = (ev - waktuLalu) / 1000;
+            waktuLalu = ev;
             if (dt > 0.04) dt = 0.04;
 
-            this.update(dt);
-            this.draw();
+            game.update(dt);  
+            game.draw();
             requestAnimationFrame(loop);
-        };
+        }
+
         requestAnimationFrame(loop);
     }
 
+    drawPath() {
+        if (!this.bird || !this.ketapel.dragging) return;
+
+        const ketapel = this.ketapel;
+        const W = this.canvas.width;
+        const putih = {r: 255, g: 255, b: 255};
+        const dt = 1 / 120;       
+        let x = this.bird.x;
+        let y = this.bird.y;
+        let vx = (ketapel.x - this.bird.x) * ketapel.power;
+        let vy = (ketapel.y - this.bird.y) * ketapel.power;
+
+        for (let langkah = 1; langkah <= 70; langkah++) {
+            vy += 350 * dt;
+            x += vx * dt;
+            y += vy * dt;
+
+            if (x < 3 || x > W - 4 || y > this.groundY) break;
+            
+            if (y < 3) continue;
+
+            
+            if (langkah % 6 === 0) {
+                const px = Math.round(x)
+                const py = Math.round(y)
+                var r = 2;
+                if (langkah<40) r=3
+                this.graf.lingkaran_polar(px, py, r, putih);
+
+            }
+        }
+    }
+
     draw() {
-        let hitam = {r:10, g:10, b:10};
-        let hijau = {r:0, g:255, b:0};
+        const hitam = {r: 10, g: 30, b: 40};
+        const hijau = {r:50, g:200, b:70};
+        const W = this.canvas.width
+        const H = this.canvas.height
         let tepi = [
             {x:0, y:0},
             {x:this.canvas.width - 1, y:0},
@@ -1002,12 +1125,23 @@ export class Game {
             {x:0, y:this.canvas.height - 1}
         ];
 
+        let tanah = [
+            {x: 0, y: this.groundY},
+            {x: W - 1, y: this.groundY},
+            {x: W - 1, y: H - 1},
+            {x: 0, y: H -1},
+        ]
+        
+        // Tanah
         this.graf.clearScreen(this.context, this.canvas);
-        this.graf.polygon(tepi, hitam);
+        this.graf.polygon(tanah, hijau);
         this.graf.dda_line(0, this.groundY, this.canvas.width - 1, this.groundY, hijau);
+        this.graf.FloodFillNonRecursive(508, 468, hijau, hijau)
+        this.graf.polygon(tepi, hitam)
 
         for (let block of this.blocks) block.draw(this.graf);
         this.ketapel.draw(this.graf, this.bird);
+        this.drawPath()
         if (this.bird) this.bird.draw(this.graf);
         for (let pig of this.pigs) pig.draw(this.graf);
 
