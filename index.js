@@ -4,42 +4,35 @@ const canvas_handler = document.querySelector('#mycanvas');
 
 const game = new Game(canvas_handler);
 
-const menuAwal = document.querySelector('#menuAwal');
-const menuLevel = document.querySelector('#menuLevel');
-const areaGame = document.querySelector('#areaGame');
-const labelLevel = document.querySelector('#labelLevel');
-const popupMenang = document.querySelector('#popupMenang');
-const popupKalah = document.querySelector('#popupKalah');
 const btnNextLevel = document.querySelector('#btnNextLevel');
-const teksMenang = document.querySelector('#teksMenang');
 
 // Menampilkan satu layar saja (menu awal, pilih level, atau game)
-function tampilkan(layar) {
-    menuAwal.classList.add('sembunyi');
-    menuLevel.classList.add('sembunyi');
-    areaGame.classList.add('sembunyi');
-    layar.classList.remove('sembunyi');
+function tampilkan(id) {
+    document.querySelector('#menuAwal').classList.add('sembunyi');
+    document.querySelector('#menuLevel').classList.add('sembunyi');
+    document.querySelector('#areaGame').classList.add('sembunyi');
+    document.querySelector(id).classList.remove('sembunyi');
 }
 
 function tutupPopup() {
-    popupMenang.classList.add('sembunyi');
-    popupKalah.classList.add('sembunyi');
+    document.querySelector('#popupMenang').classList.add('sembunyi');
+    document.querySelector('#popupKalah').classList.add('sembunyi');
 }
 
 function mainLevel(level) {
     tutupPopup();
     game.loadLevel(level);
-    labelLevel.textContent = 'Level ' + game.level;
-    tampilkan(areaGame);
+    document.querySelector('#labelLevel').textContent = 'Level ' + game.level;
+    tampilkan('#areaGame');
 }
 
 function keMenuLevel() {
     tutupPopup();
-    game.status = 'start'; // hentikan game
-    tampilkan(menuLevel);
+    game.status = 'start';
+    tampilkan('#menuLevel');
 }
 
-// Cek status game setiap frame, munculkan popup saat menang atau kalah
+// Cek status game setiap frame
 let statusLalu = game.status;
 function cekStatus() {
     if (game.status !== statusLalu) {
@@ -47,15 +40,15 @@ function cekStatus() {
 
         if (game.status === 'won') {
             if (game.level < game.maxLevel) {
-                teksMenang.textContent = 'Semua babi di level ' + game.level + ' Meminta Ampun Kepadamu';
-                btnNextLevel.classList.remove('sembunyi');
+                document.querySelector('#teksMenang').textContent = 'Semua babi di level ' + game.level + ' Meminta Ampun Kepadamu';
+                document.querySelector('#btnNextLevel').classList.remove('sembunyi');
             } else {
-                teksMenang.textContent = 'Selamat, Kaum Babi sudah musnah!';
-                btnNextLevel.classList.add('sembunyi');
+                document.querySelector('#teksMenang').textContent = 'Selamat, Kaum Babi sudah musnah!';
+                document.querySelector('#btnNextLevel').classList.add('sembunyi');
             }
-            popupMenang.classList.remove('sembunyi');
+            document.querySelector('#popupMenang').classList.remove('sembunyi');
         } else if (game.status === 'lost') {
-            popupKalah.classList.remove('sembunyi');
+            document.querySelector('#popupKalah').classList.remove('sembunyi');
         }
     }
     requestAnimationFrame(cekStatus);
@@ -63,14 +56,18 @@ function cekStatus() {
 
 // Tombol menu awal
 document.querySelector('#btnStart').addEventListener('click', () => mainLevel(1));
-document.querySelector('#btnPilihLevel').addEventListener('click', () => tampilkan(menuLevel));
-document.querySelector('#btnKembali').addEventListener('click', () => tampilkan(menuAwal));
+document.querySelector('#btnPilihLevel').addEventListener('click', () => tampilkan('#menuLevel'));
+document.querySelector('#btnKembali').addEventListener('click', () => tampilkan('#menuAwal'));
 document.querySelector('#btnMenu').addEventListener('click', keMenuLevel);
 
 // Tombol pilih level
-document.querySelectorAll('.btn-level').forEach((btn) => {
-    btn.addEventListener('click', () => mainLevel(Number(btn.dataset.level)));
-});
+const tombolLevel = document.querySelectorAll('.btn-level');
+
+for (let i = 0; i < tombolLevel.length; i++) {
+    tombolLevel[i].addEventListener('click', function () {
+        mainLevel(tombolLevel[i].value);
+    });
+}
 
 // Tombol di popup
 btnNextLevel.addEventListener('click', () => mainLevel(game.level + 1));

@@ -301,14 +301,10 @@ export class Bird{
 
         const x = this.x
         const y = this.y
-        const r = this.radius
         const merah = {r: 220, g: 30, b: 40}
         const putih = {r: 255, g: 255, b: 255}
         const oranye = {r: 255, g: 170, b: 0}
         const hitam = {r: 1, b: 2, g: 3}
-
-        const W = graf.image_data.width
-        const H = graf.image_data.height
 
         // Badan burung
         graf.lingkaran_polar(this.x, this.y, this.radius, merah);
@@ -328,7 +324,6 @@ export class Bird{
 
     }
 }
-
 
 export class Pig {
     constructor(x, y, maxHp) {
@@ -371,7 +366,6 @@ export class Pig {
         }
     }
 
-
     getCondition() {
         return this.condition
     }
@@ -405,14 +399,11 @@ export class Pig {
         const hidungKi  = graf.transform_point({x: -r * 0.15, y:  r * 0.25},M);
         const hidungKa  = graf.transform_point({x:  r * 0.15, y:  r * 0.25},M);
 
-
         // Telinga
-        graf.lingkaran_polar(telingaKi.x, telingaKi.y, r * 0.3, hijau);
-        
+        graf.lingkaran_polar(telingaKi.x, telingaKi.y, r * 0.3, hijau);  
         graf.FloodFillNonRecursive(telingaKi.x, telingaKi.y, hijau, hijau);
         graf.lingkaran_polar(telingaKa.x, telingaKa.y, r * 0.3, hijau);
         graf.FloodFillNonRecursive(telingaKa.x, telingaKa.y, hijau, hijau);
-
 
         // Kepala
         graf.lingkaran_polar(pusat.x, pusat.y, r, hijau);
@@ -468,7 +459,6 @@ export class WoodBlock {
 
         this.vx = 0;
         this.vy = 0;
-        
 
         this.theta = 0;
     }
@@ -665,8 +655,6 @@ export class SlingShot {
             ujungX, ujungY,
             karet
         );
-
-
     }
 }
 
@@ -1026,7 +1014,7 @@ export class Game {
 
             if (!this.hitObjects.includes(block)) {
                 block.takeDamage(bird.damage);
-                block.push(bird.vx * 0.4, bird.vy * 0.5);
+                block.push(bird.vx * 0.6, bird.vy * 0.5);
                 this.hitObjects.push(block);
             }
             if (tumpangX < tumpangY) {
