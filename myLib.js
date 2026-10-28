@@ -847,7 +847,7 @@ export class Game {
             }
             if (obj.y - tinggi < 0) {
                 obj.y = tinggi;                    
-                if (obj.vy < 0) obj.vy *= -0.3;    
+                if (obj.vy < 0) obj.vy *= -0.8;    
             }
             if (obj.x + lebar >= this.canvas.width) {
                 if (obj === this.bird) {
@@ -856,18 +856,23 @@ export class Game {
                 }
 
                 obj.x = this.canvas.width - lebar;
-                if (obj.vx > 0) obj.vx *= -0.3;
+                if (obj.vx > 0) obj.vx *= -0.5;
             }
             if (obj.y + tinggi >= this.groundY) {
                 obj.y = this.groundY - tinggi;
                 if (obj === this.bird && obj.vy > 40) {
                     obj.vy *= -0.3;  // Burung memantul sedikit
+                    obj.vx *= 0.55;
                 } else {
                     obj.vy = 0;
                 }
-                obj.vx *= 0.9; // Gesekan dengan tanah
+                 // Gesekan dengan tanah
+                
+                obj.vx *= 0.9;
             }
+
         }
+            
 
         // 2. Kayu saling menahan agar bisa ditumpuk.
         for (let i = 0; i < this.blocks.length; i++) {
@@ -896,7 +901,15 @@ export class Game {
                                 console.log("Babi terkena kayu! HP:", pig.hp);
                             }
                         }
+                        if(block.x < pig.x && block.vx > block.minDamageSpeed){
+                            if (!block.hitPigs.includes(pig)) {
+                                pig.takeDamage(block.damage);
+                                block.hitPigs.push(pig);
+                                console.log("Babi terkena kayu! HP:", pig.hp);
+                            }
+                        }
                     }
+                    
                 }
             }
 
@@ -911,10 +924,23 @@ export class Game {
                 if (tumpangX <= 0 || tumpangY <= 0) continue;
 
                 if (tumpangY < tumpangX) {
-                    let atas = a.y < b.y ? a : b;
-                    let bawah = a.y < b.y ? b : a;
+                    let atas ;
+                    if(a.y<b.y){
+                        atas = a;
+                    }else{
+                        atas = b;
+                    }
+                    let bawah;
+                    if(a.y<b.y){
+                        bawah = b;
+                    }else{
+                        bawah = a;
+                    }
                     atas.y = bawah.y - bawah.height / 2 - atas.height / 2;
-                    if (atas.vy > 0) atas.vy = 0;
+                    if (atas.vy > 0) {
+                        atas.vy = 0 ;
+                        atas.vx *= 0.9;
+                    }
                 } else {
                     if (dx < 0) a.x -= tumpangX / 2;
                     else a.x += tumpangX / 2;
@@ -943,7 +969,7 @@ export class Game {
                         // Babi berada di atas kayu
                         pig.y -= tumpangY;
                         if (pig.vy > 0) pig.vy = 0;
-                        pig.vx *= 0.998     
+                        pig.vx *= 0.995     
                     } else {
                         // Kayu berada di atas babi
                         block.y -= tumpangY;
@@ -957,7 +983,7 @@ export class Game {
 
                 // Kayu yang bergerak mendorong babi
                 if (Math.abs(block.vx) > 20) {
-                    pig.vx = block.vx * 0.8;
+                    pig.vx = block.vx * 0.5;
                 }
             }
 
@@ -976,7 +1002,7 @@ export class Game {
             let jarak = Math.sqrt(dx * dx + dy * dy);
             if (jarak >= bird.radius + pig.radius) continue;
 
-            if (this.hitObjects.indexOf(pig) === -1) {
+            if (!this.hitObjects.includes(pig)) {
                 pig.takeDamage(bird.damage);
                 pig.push(bird.vx * 0.2, bird.vy * 0.1);
                 this.hitObjects.push(pig);
@@ -998,9 +1024,9 @@ export class Game {
             let tumpangY = block.height / 2 + bird.radius - Math.abs(dy);
             if (tumpangX <= 0 || tumpangY <= 0) continue;
 
-            if (this.hitObjects.indexOf(block) === -1) {
+            if (!this.hitObjects.includes(block)) {
                 block.takeDamage(bird.damage);
-                block.push(bird.vx * 0.5, bird.vy * 0.5);
+                block.push(bird.vx * 0.4, bird.vy * 0.5);
                 this.hitObjects.push(block);
             }
             if (tumpangX < tumpangY) {
