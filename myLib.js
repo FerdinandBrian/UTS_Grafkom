@@ -261,9 +261,7 @@ export class Bird{
         this.radius = 18
         this.vx = 0
         this.vy = 0
-
         this.state = 'ready'
-        this.skillUsed = false
     }
 
     getState(){
@@ -280,24 +278,23 @@ export class Bird{
         this.state = 'flying'; 
     }
 
-    update(dt) {
+    update(dt,graf) {
         if (this.state !== 'flying') {
             return;
         }
         this.vy += 350 * dt;
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
+        const M = graf.create_translate(this.vx*dt,this.vy*dt)
+        const point = graf.transform_point({x:this.x, y:this.y},M)
+        this.x = point.x
+        this.y = point.y;
     }
-    useSkill(game) { 
-        return false; 
-    }
+   
 
     reset() {
         this.x = this.startX; 
         this.y = this.startY;
         this.vx = this.vy = 0; 
         this.state = 'ready'; 
-        this.skillUsed = false;
     }
     draw(graf) {
         if (this.state === 'done') return;
@@ -328,9 +325,6 @@ export class Bird{
         // Paruh
         graf.polygon([{x:this.x+14,y:this.y-2}, {x:this.x+26,y:this.y+3}, {x:this.x+14,y:this.y+7}], oranye);
         graf.FloodFillNonRecursive(Math.round(this.x + 18), Math.round(this.y + 3), oranye, oranye)        
-        console.log(this.x+20, this.y +5)
-
-        
 
     }
 }
@@ -353,13 +347,15 @@ export class Pig {
 
     }
 
-    update(dt) {
+    update(dt,graf) {
         if (this.condition === 'dead') {
             return;
         }
         this.vy += 350 * dt;
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
+        const M = graf.create_translate(this.vx*dt,this.vy*dt)
+        const point = graf.transform_point({x:this.x, y:this.y},M)
+        this.x = point.x
+        this.y = point.y
         this.theta += (this.vx / this.radius) * dt * 180 / Math.PI;
     }
 
@@ -412,9 +408,11 @@ export class Pig {
 
         // Telinga
         graf.lingkaran_polar(telingaKi.x, telingaKi.y, r * 0.3, hijau);
+        
         graf.FloodFillNonRecursive(telingaKi.x, telingaKi.y, hijau, hijau);
         graf.lingkaran_polar(telingaKa.x, telingaKa.y, r * 0.3, hijau);
         graf.FloodFillNonRecursive(telingaKa.x, telingaKa.y, hijau, hijau);
+
 
         // Kepala
         graf.lingkaran_polar(pusat.x, pusat.y, r, hijau);
@@ -427,14 +425,14 @@ export class Pig {
         for (const m of [mataKi, mataKa]) {
             graf.lingkaran_polar(m.x, m.y, r * 0.22, warnaMata);
             graf.FloodFillNonRecursive(m.x, m.y, warnaMata, putih);
-            if (this.condition === 'unhealthy') {
+            if (this.getCondition() === 'unhealthy') {
                 graf.FloodFillNonRecursive(m.x, m.y, warnaMata, warnaMata);
             }
 
             // Pupil
             graf.lingkaran_polar(m.x, m.y, r * 0.08, hitam);
             graf.FloodFillNonRecursive(m.x, m.y, warnaMata, hitam);
-            if (this.condition === 'unhealthy') {
+            if (this.getCondition() === 'unhealthy') {
                 graf.FloodFillNonRecursive(m.x, m.y, hitam, putih);
                 graf.draw_dot(m.x, m.y, hitam);
             }
@@ -447,14 +445,7 @@ export class Pig {
         graf.lingkaran_polar(hidungKi.x, hidungKi.y, r * 0.07, hitam);
         graf.lingkaran_polar(hidungKa.x, hidungKa.y, r * 0.07, hitam);
 
-        // Luka X di pipi: ujung-ujung garis juga ikut diputar
-        if (this.condition === 'unhealthy') {
-            const px = -r * 0.65, py = r * 0.3, u = r * 0.13;
-            const a = titik(px - u, py - u), b = titik(px + u, py + u);
-            const c = titik(px - u, py + u), d = titik(px + u, py - u);
-            graf.dda_line(a.x, a.y, b.x, b.y, ungu);
-            graf.dda_line(c.x, c.y, d.x, d.y, ungu);
-        }
+        
     }
 }
 
@@ -483,17 +474,20 @@ export class WoodBlock {
     }
 
 
-    update(dt) {
+    update(dt,graf) {
         if (this.condition === 'destroyed') return;
 
         this.vy += 400 * dt;
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
+        
         this.vx *= 0.96;
 
         if (Math.abs(this.vx) < 2) {
             this.vx = 0;
         }
+        const M = graf.create_translate(this.vx*dt,this.vy*dt)
+        const point = graf.transform_point({x:this.x, y:this.y},M)
+        this.x = point.x
+        this.y = point.y
     }
 
     takeDamage(damage) {
@@ -609,7 +603,7 @@ export class SlingShot {
 
         const jarak = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
-        // Batasi jarak burung dari pusat ketapel
+        // jarak burung dari pusat ketapel
         if (jarak > this.maxPull) {
             dx = dx / jarak * this.maxPull;
             dy = dy / jarak * this.maxPull;
@@ -622,7 +616,6 @@ export class SlingShot {
     release(bird) {
         if (!this.dragging) return false;
 
-        // Arah lontaran berlawanan dengan arah tarikan
         const vx = (this.x - bird.x) * this.power;
         const vy = (this.y - bird.y) * this.power;
 
@@ -763,7 +756,6 @@ export class Game {
         this.nextBird();
     }
 
-    // Mengatur mouse saat menekan, menggeser, dan melepas ketapel.
     setEvent() {
         if (this.eventsReady) return;
         this.eventsReady = true;
@@ -796,14 +788,13 @@ export class Game {
         });
     }
 
-    // Menggerakkan semua objek, lalu memeriksa tabrakan.
     update(dt) {
         if (this.status !== 'playing') return;
         if (dt > 0.04) dt = 0.04;
 
-        if (this.bird) this.bird.update(dt);
-        for (let pig of this.pigs) pig.update(dt);
-        for (let block of this.blocks) block.update(dt);
+        if (this.bird) this.bird.update(dt,this.graf);
+        for (let pig of this.pigs) pig.update(dt,this.graf);
+        for (let block of this.blocks) block.update(dt,this.graf);
 
         this.checkCollisions(dt);
 
@@ -812,7 +803,6 @@ export class Game {
             let diTanah = this.bird.y + this.bird.radius >= this.groundY - 1;
             let berhenti = Math.abs(this.bird.vx) < 20 && Math.abs(this.bird.vy) < 20;
 
-            // Ganti burung jika sudah berhenti atau terlalu lama terbang.
             if ((diTanah && berhenti) || this.shotTime > 7) {
                 this.nextBird();
             }
@@ -1010,7 +1000,7 @@ export class Game {
 
             if (this.hitObjects.indexOf(block) === -1) {
                 block.takeDamage(bird.damage);
-                block.push(bird.vx * 0.9, bird.vy * 0.15);
+                block.push(bird.vx * 0.5, bird.vy * 0.5);
                 this.hitObjects.push(block);
             }
             if (tumpangX < tumpangY) {
@@ -1025,7 +1015,6 @@ export class Game {
         }
     }
 
-    // Mengambil burung yang belum pernah ditembak.
     nextBird() {
         if (this.bird && this.bird.state === 'flying') {
             this.bird.state = 'done';
@@ -1059,7 +1048,6 @@ export class Game {
         }
     }
 
-    // Menjalankan animasi game.
     start() {
         if (this.running) return;
         this.running = true;
