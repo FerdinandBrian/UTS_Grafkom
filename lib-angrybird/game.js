@@ -454,7 +454,7 @@ export class Game {
         let waktuLalu = 0;
 
         function loop() {
-            let dt = 0.007;
+            let dt = 0.008;
 
             game.update(dt);  
             game.draw();
