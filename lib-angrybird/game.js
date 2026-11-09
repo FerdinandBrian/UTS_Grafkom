@@ -128,13 +128,13 @@ export class Game {
         for (let block of this.blocks) block.update(dt,this.graf);
 
         this.checkCollisions(dt);
-
+        console.log(this.bird.vx, this.bird.vy);
         if (this.bird && this.bird.state === 'flying') {
             this.shotTime += dt;
             let diTanah = this.bird.y + this.bird.radius >= this.groundY - 1;
-            let berhenti = Math.abs(this.bird.vx) < 20 && Math.abs(this.bird.vy) < 20;
+            let berhenti = Math.abs(this.bird.vx) <1 && Math.abs(this.bird.vy) <1;
 
-            if ((diTanah && berhenti) || this.shotTime > 3) {
+            if ((diTanah && berhenti) || this.shotTime > 7) {
                 this.nextBird();
             }
             
