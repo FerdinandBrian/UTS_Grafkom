@@ -25,6 +25,7 @@ export default class Pig {
         this.x = point.x
         this.y = point.y
         this.theta += (this.vx / this.radius) * dt * 180 / Math.PI;
+        this.theta += (this.vx / this.radius) * (dt+0.002) * 180 / Math.PI;
     }
 
     takeDamage(damage) {
