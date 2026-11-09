@@ -6,7 +6,6 @@ const game = new Game(canvas_handler);
 
 const btnNextLevel = document.querySelector('#btnNextLevel');
 
-// Menampilkan satu layar saja (menu awal, pilih level, atau game)
 function tampilkan(id) {
     document.querySelector('#menuAwal').classList.add('sembunyi');
     document.querySelector('#menuLevel').classList.add('sembunyi');

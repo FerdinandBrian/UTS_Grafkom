@@ -390,7 +390,7 @@ export class Pig {
         const M = graf.multiply(translasi, rotasi);
 
 
-        const pusat     = graf.transform_point({x: 0,         y: 0},M);
+        const pusat     = graf.transform_point({x: 0, y: 0},M);
         const telingaKi = graf.transform_point({x: -r * 0.6,  y: -r * 0.8},M);
         const telingaKa = graf.transform_point({x:  r * 0.6,  y: -r * 0.8},M);
         const mataKi    = graf.transform_point({x: -r * 0.35, y: -r * 0.25},M);
@@ -462,7 +462,6 @@ export class WoodBlock {
 
         this.theta = 0;
     }
-
 
     update(dt,graf) {
         if (this.condition === 'destroyed') return;
@@ -665,7 +664,7 @@ export class Game {
         let imageData = this.context.getImageData(0, 0, canvas.width, canvas.height);
         this.graf = new GrafLib(canvas.width, imageData);
 
-        this.groundY = canvas.height - 40;
+        this.groundY = canvas.height - 50;
         this.ketapel = new SlingShot(150, this.groundY - 100, 80, 7);
         this.birds = [];
         this.pigs = [];
@@ -694,7 +693,6 @@ export class Game {
         this.ketapel.dragging = false;
 
         let kuning = {r: 255, g: 215, b: 0}
-        let merah = {r:255, g:0, b:0};
         for (let i = 0; i < 10; i++) {
             this.birds.push(new Bird(this.ketapel.x, this.ketapel.y, kuning, 100));
         }
