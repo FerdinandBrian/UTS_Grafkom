@@ -24,7 +24,6 @@ export default class Pig {
         const point = graf.transform_point({x:this.x, y:this.y},M)
         this.x = point.x
         this.y = point.y
-        this.theta += (this.vx / this.radius) * dt * 180 / Math.PI;
         this.theta += (this.vx / this.radius) * (dt+0.002) * 180 / Math.PI;
     }
 
