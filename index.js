@@ -65,7 +65,7 @@ const tombolLevel = document.querySelectorAll('.btn-level');
 
 for (let i = 0; i < tombolLevel.length; i++) {
     tombolLevel[i].addEventListener('click', function () {
-        mainLevel(Number(tombolLevel[i].value));
+        mainLevel(tombolLevel[i].value);
     });
 }
 

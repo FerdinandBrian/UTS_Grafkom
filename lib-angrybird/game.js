@@ -12,7 +12,7 @@ export class Game {
         this.graf = new GrafLib(canvas.width, imageData);
 
         this.groundY = canvas.height - 50;
-        this.ketapel = new SlingShot(150, this.groundY - 100, 80, 7.5);
+        this.ketapel = new SlingShot(150, this.groundY - 100, 80, 7);
         this.birds = [];
         this.pigs = [];
         this.blocks = [];
