@@ -1,4 +1,5 @@
-import { Game } from './myLib.js';
+import {Game} from './lib-angrybird/game.js';
+
 
 const canvas_handler = document.querySelector('#mycanvas');
 
@@ -64,7 +65,7 @@ const tombolLevel = document.querySelectorAll('.btn-level');
 
 for (let i = 0; i < tombolLevel.length; i++) {
     tombolLevel[i].addEventListener('click', function () {
-        mainLevel(tombolLevel[i].value);
+        mainLevel(Number(tombolLevel[i].value));
     });
 }
 
