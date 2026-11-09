@@ -170,6 +170,7 @@ export class Game {
                 lebar = obj.radius
                 tinggi = obj.radius
             }
+
             // kiri
             if (obj.x < lebar) {
                 // langsung ganti burung 
@@ -275,17 +276,15 @@ export class Game {
                 // atas dan bawah
                 if (tumpangY < tumpangX) {
                     let atas ;
-                    if(a.y<b.y){
-                        atas = a;
-                    }else{
-                        atas = b;
-                    }
                     let bawah;
                     if(a.y<b.y){
+                        atas = a;
                         bawah = b;
                     }else{
+                        atas = b;
                         bawah = a;
                     }
+                    
                     atas.y = bawah.y - bawah.height / 2 - atas.height / 2;
                     if (atas.vy > 0) {
                         atas.vy = 0 ;
@@ -296,10 +295,13 @@ export class Game {
                 // kiri dan kanan
                 else {
                     // blok a di kiri blok b di kanan
-                    if (dx < 0) a.x -= tumpangX / 2;
-                    else a.x += tumpangX / 2;
-                    if (dx < 0) b.x += tumpangX / 2;
-                    else b.x -= tumpangX / 2;
+                    if (dx < 0) {
+                        a.x -= tumpangX / 2;
+                        b.x += tumpangX / 2;
+                    } else {
+                        a.x += tumpangX / 2;
+                        b.x -= tumpangX / 2;
+                    }
                     a.vx = 0;
                     b.vx = 0;
                 }
@@ -323,7 +325,7 @@ export class Game {
                         // Babi berada di atas kayu
                         pig.y -= tumpangY;
                         if (pig.vy > 0) pig.vy = 0;
-                        pig.vx *= 0.995     
+                        pig.vx *= 0.998;    
                     } else {
                         // Kayu berada di atas babi
                         block.y -= tumpangY;
@@ -381,7 +383,7 @@ export class Game {
             // cek apakah sudah menabrak 
             if (!this.hitObjects.includes(block)) {
                 block.takeDamage(bird.damage);
-                block.push(bird.vx * 0.9, bird.vy * 0.4);
+                block.push(bird.vx * 0.7, bird.vy * 0.4);
                 this.hitObjects.push(block);
             }
 
@@ -451,10 +453,8 @@ export class Game {
         const game = this;  
         let waktuLalu = 0;
 
-        function loop(ev) {
-            let dt = (ev - waktuLalu) / 1000;
-            waktuLalu = ev;
-            if (dt > 0.04) dt = 0.04;
+        function loop() {
+            let dt = 0.007;
 
             game.update(dt);  
             game.draw();
