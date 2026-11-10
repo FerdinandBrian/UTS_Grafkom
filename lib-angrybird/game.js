@@ -24,10 +24,12 @@ export class Game {
         this.running = false;
         this.hitObjects = []; 
         this.shotTime = 0;   
+        this.life = 0;
     }
 
     loadLevel(level) {
         if (level < 1 || level > this.maxLevel) level = 1;
+        this.life = 1
 
         this.level = level;
         this.status = 'playing';
@@ -39,9 +41,11 @@ export class Game {
         this.shotTime = 0;
         this.ketapel.dragging = false;
 
-        let kuning = {r: 255, g: 215, b: 0}
+        let merah = {r: 255, g: 0, b: 0}
         for (let i = 0; i < 10; i++) {
-            this.birds.push(new Bird(this.ketapel.x, this.ketapel.y, kuning, 100));
+            this.birds.push(new Bird(this.ketapel.x, this.ketapel.y, merah, 100));
+            this.life++
+
         }
 
         let tanah = this.groundY;
@@ -132,9 +136,9 @@ export class Game {
         if (this.bird && this.bird.state === 'flying') {
             this.shotTime += dt;
             let diTanah = this.bird.y + this.bird.radius >= this.groundY - 1;
-            let berhenti = Math.abs(this.bird.vx) <1 && Math.abs(this.bird.vy) <1;
+            let berhenti = Math.abs(this.bird.vx) <10 && Math.abs(this.bird.vy) <10;
 
-            if ((diTanah && berhenti) || this.shotTime > 7) {
+            if ((diTanah && berhenti) || this.shotTime > 4.5) {
                 this.nextBird();
             }
             
@@ -213,7 +217,7 @@ export class Game {
                     obj.vy = 0;
                 }
                 // Gesekan dengan tanah
-                obj.vx *= 0.92;
+                obj.vx *= 0.85;
                 
                
             }
@@ -383,7 +387,7 @@ export class Game {
             // cek apakah sudah menabrak 
             if (!this.hitObjects.includes(block)) {
                 block.takeDamage(bird.damage);
-                block.push(bird.vx * 0.7, bird.vy * 0.4);
+                block.push(bird.vx * 0.45, bird.vy * 0.4);
                 this.hitObjects.push(block);
             }
 
@@ -414,6 +418,7 @@ export class Game {
     }
 
     nextBird() {
+        this.life--
         if (this.bird && this.bird.state === 'flying') {
             this.bird.state = 'done';
             this.bird.vx = 0;
@@ -451,10 +456,9 @@ export class Game {
         this.running = true;
 
         const game = this;  
-        let waktuLalu = 0;
 
         function loop() {
-            let dt = 0.008;
+            let dt = 0.023;
 
             game.update(dt);  
             game.draw();

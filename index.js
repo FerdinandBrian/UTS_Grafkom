@@ -54,6 +54,16 @@ function cekStatus() {
     requestAnimationFrame(cekStatus);
 }
 
+let nyawa = game.life
+function cekNyawa(){
+    if (game.life != nyawa){
+        nyawa = game.life
+        document.querySelector('#jumlahNyawa').textContent = nyawa;
+
+    }
+    requestAnimationFrame(cekNyawa)
+}
+
 // Tombol menu awal
 document.querySelector('#btnStart').addEventListener('click', () => mainLevel(1));
 document.querySelector('#btnPilihLevel').addEventListener('click', () => tampilkan('#menuLevel'));
@@ -79,3 +89,4 @@ document.querySelectorAll('.btn-ke-level').forEach((btn) => {
 game.setEvent();
 game.start();
 cekStatus();
+cekNyawa();

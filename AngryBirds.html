@@ -82,6 +82,10 @@
             font-weight: bold;
             font-size: 18px;
         }
+        #nyawa {
+            font-weight: bold;
+            font-size: 18px;
+        }
 
         .popup-latar {
             position: fixed;
@@ -145,9 +149,13 @@
 
     <!-- Area game -->
     <div id="areaGame" class="sembunyi">
+        
         <div class="bar-game">
             <span id="labelLevel">Level 1</span>
             <button id="btnMenu" class="abu">Pilih Level</button>
+        </div>
+        <div id="bar-game">
+            <span id="nyawa">Sisa Burung : <span id="jumlahNyawa"></span>
         </div>
         <canvas width="1000" height="500" id="mycanvas"></canvas>
     </div>
